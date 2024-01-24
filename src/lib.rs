@@ -18,10 +18,24 @@ macro_rules! pipe {
 
     // This arm matches a partial invocation of a pipe where `@` will be replaced by the
     // value being passed through the pipeline.
-    (@accumulate_pipes [$expr:expr] [$($pipes:tt)*] |> $pipe:ident($($l_arg:expr,)* $(@ $(@$($_:tt)* $value:tt)? $(, $r_arg:expr)*)?) $($tail:tt)*) => ($crate::pipe!(
+    (
+        @accumulate_pipes [$expr:expr] [$($pipes:tt)*]
+        |> $(:: $(@$($_:tt)* $prefixed:tt)?)? $ident:ident $(:: $path:ident)*
+        ($($l_arg:expr,)* $(@ $(@$($__:tt)* $value:tt)? $(, $r_arg:expr)*)?)
+        $($tail:tt)*
+    ) => ($crate::pipe!(
         @accumulate_pipes [$expr] [$($pipes)*
-            [|value| $pipe($($l_arg,)* $($($value)? value, $($r_arg),*)?)]
+            [|value| $($($prefixed)? ::)? $ident $(:: $path)* ($($l_arg,)* $($($value)? value, $($r_arg),*)?)]
         ] $($tail)*
+    ));
+
+    // This arm matches a pipe that consists of only an identifier, this assumes the identifier is callable.
+    (
+        @accumulate_pipes [$expr:tt] [$($pipes:tt)*]
+        |> $(:: $(@$($_:tt)* $prefixed:tt)?)? $ident:ident $(:: $path:ident)*
+        $(|> $($tail:tt)*)?
+    ) => ($crate::pipe!(
+        @accumulate_pipes [$expr] [$($pipes)* [$($($prefixed)? ::)? $ident $(:: $path)*]] $(|> $($tail)*)?
     ));
 
     // This arm matches a method invocation on the value currently going through the pipeline.
@@ -36,11 +50,6 @@ macro_rules! pipe {
         @accumulate_pipes [$expr] [$($pipes)*
             [|value| value.$pipe()]
         ] $($tail)*
-    ));
-
-    // This arm matches a pipe that consists of only an identifier, this assumes the identifier is callable.
-    (@accumulate_pipes [$expr:tt] [$($pipes:tt)*] |> $pipe:ident $($tail:tt)*) => ($crate::pipe!(
-        @accumulate_pipes [$expr] [$($pipes)* [$pipe]] $($tail)*
     ));
 
     // No more pipes were found, execute all the pipes in order with the result of the previous,
