@@ -24,5 +24,8 @@ macro_rules! pipe {
     });
 
     /* Accepts any tokens and attempts to parse them as a pipeline. */
-    ($($tokens:tt)*) => ($crate::pipe!(@accumulate_expression [] $($tokens)*));
+    ($($tokens:tt)+) => ($crate::pipe!(@accumulate_expression [] $($tokens)*));
+
+    /* An empty pipeline results in a unit type. */
+    () => (());
 }
