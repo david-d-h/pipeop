@@ -44,7 +44,7 @@ macro_rules! pipe {
     ));
 
     // No more pipes were found, execute all the pipes in order with the result of the previous,
-    // or the expression buffer if no previous piped-value exists.
+    // or the expression buffer if no previous piped-value exists and return the result.
     (@accumulate_pipes [$expr:expr] [$([$($pipe:tt)+])+]) => ({
         let current = $expr;
 

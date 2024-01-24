@@ -38,3 +38,20 @@ fn println(message: &'static str, upcase: bool) {
 
 pipe!("Hello" |> println(@, true)); // will output "HELLO" to stdout
 ```
+
+### Invoking methods on the item in the pipeline
+
+You can invoke methods on the item in the pipeline at any time by prefixing
+the method identifier by a `.`
+
+```rust
+fn println(message: String) {
+    println!("{message}");
+}
+
+// This is functionally the same as the "Partial invocation" example.
+pipe!("Hello" 
+    |> .to_uppercase
+    |> println
+);
+```
