@@ -1,3 +1,5 @@
+#![no_std]
+
 #[macro_export]
 macro_rules! pipe {
     // If no pipes were found, throw a comptime error and stop the compilation process, invalid usage was found.
@@ -17,9 +19,23 @@ macro_rules! pipe {
     // This arm matches a partial invocation of a pipe where `@` will be replaced by the
     // value being passed through the pipeline.
     (@accumulate_pipes [$expr:expr] [$($pipes:tt)*] |> $pipe:ident($($l_arg:expr,)* $(@ $(@$($_:tt)* $value:tt)? $(, $r_arg:expr)*)?) $($tail:tt)*) => ($crate::pipe!(
-        @accumulate_pipes [$expr] [$($pipes)* [
-            (|value| $pipe($($l_arg,)* $($($value)? value, $($r_arg),*)?))
-        ]] $($tail)*
+        @accumulate_pipes [$expr] [$($pipes)*
+            [|value| $pipe($($l_arg,)* $($($value)? value, $($r_arg),*)?)]
+        ] $($tail)*
+    ));
+
+    // This arm matches a method invocation on the value currently going through the pipeline.
+    (@accumulate_pipes [$expr:expr] [$($pipes:tt)*] |> . $pipe:ident($($arg:expr),*) $($tail:tt)*) => ($crate::pipe!(
+        @accumulate_pipes [$expr] [$($pipes)*
+            [|value| value.$pipe($($($arg),*)?)]
+        ] $($tail)*
+    ));
+
+    // This arm matches a method invocation without parentheses, and thus also without arguments.
+    (@accumulate_pipes [$expr:expr] [$($pipes:tt)*] |> . $pipe:ident $($tail:tt)*) => ($crate::pipe!(
+        @accumulate_pipes [$expr] [$($pipes)*
+            [|value| value.$pipe()]
+        ] $($tail)*
     ));
 
     // This arm matches a pipe that consists of only an identifier, this assumes the identifier is callable.
@@ -33,11 +49,13 @@ macro_rules! pipe {
         let current = $expr;
 
         $(
-            let current = $($pipe)*(current);
+            let current = $crate::call_with($($pipe)*, current);
         )+
 
         current
     });
+
+    (@accumulate_pipes [$($expr:tt)*] [$($pipes:tt)*] $($tail:tt)*) => (::std::compile_error!("found invalid pipe syntax"));
 
     // Accepts any tokens and attempts to parse them as a pipeline.
     ($($tokens:tt)+) => ($crate::pipe!(
@@ -46,4 +64,8 @@ macro_rules! pipe {
 
     // An empty pipeline results in a unit type.
     () => (());
+}
+
+pub fn call_with<T, R, F: FnOnce(T) -> R>(f: F, t: T) -> R {
+    f(t)
 }
