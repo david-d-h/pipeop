@@ -70,3 +70,17 @@ pipe!("Hello"
     |> |value| println!("{value}")
 );
 ```
+
+### Storing the pipeline in a reusable closure
+
+To store a pipeline in a closure you can put `...` where you would normally
+put the pipe's initial value.
+
+```rust
+let f = pipe!(... as &'static str |> .to_uppercase);
+
+f("Hello"); // HELLO
+```
+
+**Note: often the type of the item can be inferred, in which case you can
+omit the `as type` part**
