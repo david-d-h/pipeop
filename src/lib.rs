@@ -54,9 +54,21 @@ macro_rules! pipe {
         @accumulate_pipes [$($expr)+] [$($pipes)* [|$ident| $block]] $($tail)*
     ));
 
-    // This arm matches a closure without a block.
-    (@accumulate_pipes [$($expr:tt)+] [$($pipes:tt)*] |> |$ident:ident| $($block:tt)+ $(|> $($tail:tt)*)?) => ($crate::pipe!(
-        @accumulate_pipes [$($expr)+] [$($pipes)* [|$ident| $($block)+]] $(|> $($tail)*)?
+    // This arm matches a closure that evaluates an expression.
+    (@accumulate_pipes [$($expr:tt)+] [$($pipes:tt)*] |> |$ident:ident| $($residual:tt)+) => ($crate::pipe!(
+        @accumulate_expr_closure_pipe [[$($expr)+]] [$($pipes)*] [$ident] [] $($residual)*
+    ));
+
+    (@accumulate_pipes [$($expr:tt)+] [$($pipes:tt)*] |> |_| $($residual:tt)+) => ($crate::pipe!(
+        @accumulate_expr_closure_pipe [[$($expr)+]] [$($pipes)*] [_] [] $($residual)*
+    ));
+
+    (@accumulate_expr_closure_pipe [$($carry:tt)*] [$($pipes:tt)*] [$($args:tt)*] [$expression:expr] $(|> $($tail:tt)+)?) => ($crate::pipe!(
+        @accumulate_pipes $($carry)* [$($pipes)* [|$($args)*| $expression]] $(|> $($tail)+)?
+    ));
+
+    (@accumulate_expr_closure_pipe [$($carry:tt)*] [$($pipes:tt)*] [$($args:tt)*] [$($expression:tt)*] $token:tt $($tail:tt)*) => ($crate::pipe!(
+        @accumulate_expr_closure_pipe [$($carry)*] [$($pipes)*] [$($args)*] [$($expression)* $token] $($tail)*
     ));
 
     // Create a closure that encapsulates the pipeline, so the pipeline can be reused.
