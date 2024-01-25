@@ -20,11 +20,11 @@ macro_rules! pipe {
     (
         @accumulate_pipes [$($expr:tt)+] [$($pipes:tt)*]
         |> $(:: $(@$($_:tt)* $prefixed:tt)?)? $ident:ident $(:: $path:ident)*
-        ($($l_arg:expr,)* @ $(@$($__:tt)* $value:tt)? $(, $r_arg:expr)*)
+        ($($l_arg:expr,)* $(ref $(@@$($__:tt)* $borrow:tt)?)? @ $(, $r_arg:expr)* $(,)?)
         $($tail:tt)*
     ) => ($crate::pipe!(
         @accumulate_pipes [$($expr)+] [$($pipes)*
-            [|value| $($($prefixed)? ::)? $ident $(:: $path)* ($($l_arg,)* $($($value)? value, $($r_arg),*)?)]
+            [|$($($borrow)? ref)? value| $($($prefixed)? ::)? $ident $(:: $path)* ($($l_arg,)* value, $($r_arg),*)]
         ] $($tail)*
     ));
 
