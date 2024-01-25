@@ -35,32 +35,36 @@ macro_rules! pipe {
         |> $(:: $(@$($_:tt)* $prefixed:tt)?)? $ident:ident $(:: $path:ident)*
         $(|> $($tail:tt)*)?
     ) => ($crate::pipe!(
-        @accumulate_pipes [$expr] [$($pipes)* [$($($prefixed)? ::)? $ident $(:: $path)*]] $(|> $($tail)*)?
+        @accumulate_pipes [$expr]
+            [$($pipes)* [$($($prefixed)? ::)? $ident $(:: $path)*]
+        ] $(|> $($tail)*)?
     ));
 
     // This arm matches a method invocation on the value currently going through the pipeline.
     (@accumulate_pipes [$expr:expr] [$($pipes:tt)*] |> . $pipe:ident($($arg:expr),*) $($tail:tt)*) => ($crate::pipe!(
-        @accumulate_pipes [$expr] [$($pipes)*
-            [|value| value.$pipe($($($arg),*)?)]
-        ] $($tail)*
+        @accumulate_pipes [$expr] [$($pipes)* [|value| value.$pipe($($($arg),*)?)]] $($tail)*
     ));
 
     // This arm matches a method invocation without parentheses, and thus also without arguments.
     (@accumulate_pipes [$expr:expr] [$($pipes:tt)*] |> . $pipe:ident $($tail:tt)*) => ($crate::pipe!(
-        @accumulate_pipes [$expr] [$($pipes)*
-            [|value| value.$pipe()]
-        ] $($tail)*
+        @accumulate_pipes [$expr] [$($pipes)* [|value| value.$pipe()]] $($tail)*
+    ));
+
+    // This arm matches a closure with a block.
+    (@accumulate_pipes [$expr:expr] [$($pipes:tt)*] |> |$ident:ident| $block:block $($tail:tt)*) => ($crate::pipe!(
+        @accumulate_pipes [$expr] [$($pipes)* [|$ident| $block]] $($tail)*
+    ));
+
+    // This arm matches a closure without a block.
+    (@accumulate_pipes [$expr:expr] [$($pipes:tt)*] |> |$ident:ident| $($block:tt)+ $(|> $($tail:tt)*)?) => ($crate::pipe!(
+        @accumulate_pipes [$expr] [$($pipes)* [|$ident| $($block)+]] $(|> $($tail)*)?
     ));
 
     // No more pipes were found, execute all the pipes in order with the result of the previous,
     // or the expression buffer if no previous piped-value exists and return the result.
     (@accumulate_pipes [$expr:expr] [$([$($pipe:tt)+])+]) => ({
         let current = $expr;
-
-        $(
-            let current = $crate::call_with($($pipe)*, current);
-        )+
-
+        $(let current = $crate::call_with($($pipe)*, current);)+
         current
     });
 
