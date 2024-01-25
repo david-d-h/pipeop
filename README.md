@@ -55,3 +55,18 @@ pipe!("Hello"
     |> println
 );
 ```
+
+### Closure based pipes
+
+You can also use closures as pipes, so you don't have to define a
+whole new function for every simple operation. 
+
+Both types of closures are valid, you can have a closure that just
+evaluates an expression, or you can have a whole code block.
+
+```rust
+pipe!("Hello"
+    |> .to_uppercase
+    |> |value| println!("{value}")
+);
+```
