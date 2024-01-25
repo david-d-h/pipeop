@@ -7,4 +7,5 @@ description = "Adding the pipe operator to Rust with a declarative macro."
 license = "MIT"
 repository = "https://github.com/daviddenhaan/pipeop"
 homepage = "https://github.com/daviddenhaan/pipeop"
-keywords = ["macro"]
+keywords = ["macro", "no_std"]
+categories = ["no-std"]
