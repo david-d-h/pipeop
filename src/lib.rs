@@ -60,8 +60,8 @@ macro_rules! pipe {
     ));
 
     // Create a closure that encapsulates the pipeline, so the pipeline can be reused.
-    (@accumulate_pipes [...] [$($pipes:tt)+]) => ((
-        |item| $crate::pipe!(@accumulate_pipes [item] [$($pipes)+])
+    (@accumulate_pipes [... $(as $(@$($_:tt)* $explicit:tt)? $ty:ty)?] [$($pipes:tt)+]) => ((
+        |item $($($explicit)? : $ty)?| $crate::pipe!(@accumulate_pipes [item] [$($pipes)+])
     ));
 
     // No more pipes were found, execute all the pipes in order with the result of the previous,
