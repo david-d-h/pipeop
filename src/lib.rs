@@ -63,8 +63,8 @@ macro_rules! pipe {
         @accumulate_expr_closure_pipe [[$($expr)+]] [$($pipes)*] [_] [] $($residual)*
     ));
 
-    (@accumulate_expr_closure_pipe [$($carry:tt)*] [$($pipes:tt)*] [$($args:tt)*] [$expression:expr] $(|> $($tail:tt)+)?) => ($crate::pipe!(
-        @accumulate_pipes $($carry)* [$($pipes)* [|$($args)*| $expression]] $(|> $($tail)+)?
+    (@accumulate_expr_closure_pipe [$($carry:tt)*] [$($pipes:tt)*] [$($args:tt)*] [$($expression:tt)*] $(|> $($tail:tt)+)?) => ($crate::pipe!(
+        @accumulate_pipes $($carry)* [$($pipes)* [|$($args)*| $($expression)*]] $(|> $($tail)+)?
     ));
 
     (@accumulate_expr_closure_pipe [$($carry:tt)*] [$($pipes:tt)*] [$($args:tt)*] [$($expression:tt)*] $token:tt $($tail:tt)*) => ($crate::pipe!(
