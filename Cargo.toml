@@ -1,11 +1,11 @@
 [package]
 name = "pipeop"
-version = "0.1.7"
+version = "0.1.8"
 edition = "2021"
-authors = ["David <75451291+daviddenhaan@users.noreply.github.com>"]
+authors = ["David <75451291+david-d-h@users.noreply.github.com>"]
 description = "Adding the pipe operator to Rust with a declarative macro."
 license = "MIT"
-repository = "https://github.com/daviddenhaan/pipeop"
-homepage = "https://github.com/daviddenhaan/pipeop"
+repository = "https://github.com/david-d-h/pipeop"
+homepage = "https://github.com/david-d-h/pipeop"
 keywords = ["macro", "no_std"]
 categories = ["no-std"]
